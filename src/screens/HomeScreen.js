@@ -8,14 +8,14 @@ export default function HomeScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Separation')}  // Navega para a tela de separação
+        onPress={() => navigation.navigate('ScanOrderScreen')}  // Navega para a tela de separação
       >
         <Text style={styles.buttonText}>Separar</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Conference')}  // Navega para a tela de conferência
+        onPress={() => navigation.navigate('OrderConferenceScreen')}  // Navega para a tela de conferência
       >
         <Text style={styles.buttonText}>Conferir</Text>
       </TouchableOpacity>

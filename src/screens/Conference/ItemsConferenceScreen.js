@@ -2,29 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import axios from 'axios';
-import MyModal from '../modal/MyModal';
+import MyModal from '../../modal/MyModal';
+import apiServices from '../../services/apiServices';
 
-
-export default function OrderScreen({ route, navigation }) {
-  const { items } = route.params;
+export default function ItemsConferenceScreen({ route, navigation }) {
+  const { items, orderId } = route.params;
   const [scannedCode, setScannedCode] = useState('');
   const [orderItems, setOrderItems] = useState(items);
   const [successSound, setSuccessSound] = useState();
   const [errorSound, setErrorSound] = useState();
-
   const [isModalVisible, setIsModalVisible] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
-    console.log(items);
     async function loadSounds() {
       const { sound: loadedSuccess } = await Audio.Sound.createAsync(
-        require('../assets/success.mp3')
+        require('../../assets/success.mp3')
       );
       setSuccessSound(loadedSuccess);
 
       const { sound: loadedError } = await Audio.Sound.createAsync(
-        require('../assets/error.mp3')
+        require('../../assets/error.mp3')
       );
       setErrorSound(loadedError);
     }
@@ -62,34 +60,22 @@ export default function OrderScreen({ route, navigation }) {
 
   const handleFinish = async () => {
     try {
-      // Exemplo de ID do pedido (você pode passar pelo route.params também)
-      const orderId = route.params.orderId;
- 
-      console.log(orderId)
-  
-      // Chamada para sua API Spring
-      const url = `http://192.168.0.12:8080/order/${orderId}`;
-      console.log('Buscando:', url);
-      const response = await axios.put(url);
-      const order = response.data;
+      
+      const response = await apiServices.changeOrderFinish(orderId);
 
       if (response.status === 200) {
-        setModalMessage('Separação finalizada');
+        setModalMessage('Conferencia finalizada');
         setIsModalVisible(true);
         navigation.goBack(); // Volta para a tela anterior
       } else {
-        setModalMessage('Erro', 'Não foi possível finalizar a separação.')
+        setModalMessage('Erro ao finalizar separação');
         setIsModalVisible(true);
-       
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Falha ao conectar com o servidor.');
     }
   };
-
-  
-  
 
   const handleInterrupt = () => {
     Alert.alert(
@@ -106,7 +92,7 @@ export default function OrderScreen({ route, navigation }) {
     <View style={styles.itemCard}>
       <Text style={styles.itemSku}> {item.sku}</Text>
       <Text style={styles.itemDescription}> {item.description}</Text>
-      <Text style={styles.itemQuantity}>Quantidade  {item.quantity}</Text>
+      <Text style={styles.itemQuantity}>Quantidade {item.quantity}</Text>
     </View>
   );
 
@@ -128,7 +114,7 @@ export default function OrderScreen({ route, navigation }) {
         <>
           <TextInput
             style={styles.input}
-            placeholder="codigo"
+            placeholder="Código do produto"
             value={scannedCode}
             onChangeText={setScannedCode}
             onSubmitEditing={handleScan}
@@ -155,7 +141,7 @@ export default function OrderScreen({ route, navigation }) {
         <>
           <Text style={styles.finishedText}>Todos os itens foram separados!</Text>
           <TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
-            <Text style={styles.finishButtonText}>Finalizar Separação</Text>
+            <Text style={styles.finishButtonText}>Finalizar Conferencia</Text>
           </TouchableOpacity>
         </>
       )}

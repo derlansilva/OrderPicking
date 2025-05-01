@@ -2,26 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import axios from 'axios';
-import MyModal from '../modal/MyModal';
+import MyModal from '../../modal/MyModal';
+import apiServices from '../../services/apiServices';
 
-export default function ConferenceScreen({ route, navigation }) {
-  const { items, orderId } = route.params;
+
+export default function ScanItemsScreen({ route, navigation }) {
+  const { items } = route.params;
   const [scannedCode, setScannedCode] = useState('');
   const [orderItems, setOrderItems] = useState(items);
   const [successSound, setSuccessSound] = useState();
   const [errorSound, setErrorSound] = useState();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
+    console.log(items);
     async function loadSounds() {
       const { sound: loadedSuccess } = await Audio.Sound.createAsync(
-        require('../assets/success.mp3')
+        require('../../assets/success.mp3')
       );
       setSuccessSound(loadedSuccess);
 
       const { sound: loadedError } = await Audio.Sound.createAsync(
-        require('../assets/error.mp3')
+        require('../../assets/error.mp3')
       );
       setErrorSound(loadedError);
     }
@@ -59,22 +63,37 @@ export default function ConferenceScreen({ route, navigation }) {
 
   const handleFinish = async () => {
     try {
-      const url = `http://192.168.0.12:8080/order/${orderId}`;
-      const response = await axios.put(url, { status: 'COMPLETED' });
+      // Exemplo de ID do pedido (você pode passar pelo route.params também)
+      const orderId = route.params.orderId;
+ 
+      console.log(orderId)
+  
+    
+      const response = await apiServices.changeOrderConfered(orderId);
+      const order = response;
 
       if (response.status === 200) {
         setModalMessage('Separação finalizada');
         setIsModalVisible(true);
         navigation.goBack(); // Volta para a tela anterior
       } else {
-        setModalMessage('Erro ao finalizar separação');
+        setModalMessage('Erro', 'Não foi possível finalizar a separação.')
         setIsModalVisible(true);
+       
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Falha ao conectar com o servidor.');
     }
   };
+
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    navigation.goBack();
+  };
+  
+  
 
   const handleInterrupt = () => {
     Alert.alert(
@@ -91,13 +110,14 @@ export default function ConferenceScreen({ route, navigation }) {
     <View style={styles.itemCard}>
       <Text style={styles.itemSku}> {item.sku}</Text>
       <Text style={styles.itemDescription}> {item.description}</Text>
-      <Text style={styles.itemQuantity}>Quantidade {item.quantity}</Text>
+      <Text style={styles.itemQuantity}>Quantidade  {item.quantity}</Text>
     </View>
   );
 
   const closeModal = () => {
     setIsModalVisible(false);
     setModalMessage('');
+    navigation.goBack();
   };
 
   return (
@@ -113,7 +133,7 @@ export default function ConferenceScreen({ route, navigation }) {
         <>
           <TextInput
             style={styles.input}
-            placeholder="Código do produto"
+            placeholder="codigo"
             value={scannedCode}
             onChangeText={setScannedCode}
             onSubmitEditing={handleScan}

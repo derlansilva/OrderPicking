@@ -2,11 +2,14 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from "./src/screens/HomeScreen";
-import OrderScreen from './src/screens/OrderScreen';
-import SeparationScren from "./src/screens/SeparationScreen"
+
 import 'react-native-gesture-handler';
-import ConferenceOrderScreen from './src/screens/ConferenceOrderScreen';
-import ConferenceScreen from './src/screens/ConferenceScreen';
+
+import ScanOrderScreen from './src/screens/Separation/ScanOrderScreen';
+import ScanItemsScreen from './src/screens/Separation/ScanItemsScreen';
+import OrderConferenceScreen from './src/screens/Conference/OrderConferenceScreen';
+import ItemsConferenceScreen from './src/screens/Conference/ItemsConferenceScreen';
+import LoginScreen from './src/screens/Login/LoginScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -14,12 +17,13 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-        <Stack.Screen name="Order" component={OrderScreen} options={{ title: 'Itens do Pedido' }} />
-        <Stack.Screen name="Separation" component={SeparationScren} options={{ title: 'Separção de Pedidos' }} />
-        <Stack.Screen name="Conference" component={ConferenceOrderScreen} options={{ title: 'Conferencia de Pedidos' }} />
-        <Stack.Screen name="ConferenceScreen" component={ConferenceScreen} options={{ title: 'Itens do pedido' }} />
+        <Stack.Screen name="ScanOrderScreen" component={ScanOrderScreen} options={{ title: 'Separação de Pedidos' }} />
+        <Stack.Screen name="ScanItemsScreen" component={ScanItemsScreen} options={{ title: 'Itens do pedido' }} />
+        <Stack.Screen name="OrderConferenceScreen" component={OrderConferenceScreen} options={{ title: 'Conferencia de Pedidos' }} />
+        <Stack.Screen name="ItemsConferenceScreen" component={ItemsConferenceScreen} options={{ title: 'Itens do pedido' }} />
 
       </Stack.Navigator>
     </NavigationContainer>

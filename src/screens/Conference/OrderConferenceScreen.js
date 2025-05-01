@@ -2,25 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { Audio } from 'expo-av';
-import MyModal from "../modal/MyModal"
+import MyModal from "../../modal/MyModal";
+import apiServices from '../../services/apiServices';
 
-export default function HomeScreen({ navigation }) {
+export default function OrderConferenceScreen({ navigation }) {
   const [orderNumber, setOrderNumber] = useState('');
   const [successSound, setSuccessSound] = useState();
   const [errorSound, setErrorSound] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-
   useEffect(() => {
     async function loadSounds() {
       const { sound: loadedSuccess } = await Audio.Sound.createAsync(
-        require('../assets/success.mp3')
+        require('../../assets/success.mp3')
       );
       setSuccessSound(loadedSuccess);
 
       const { sound: loadedError } = await Audio.Sound.createAsync(
-        require('../assets/error.mp3')
+        require('../../assets/error.mp3')
       );
       setErrorSound(loadedError);
     }
@@ -42,25 +42,33 @@ export default function HomeScreen({ navigation }) {
     }
 
     try {
-      const url = `http://192.168.0.12:8080/order/${orderNumber}`;
-      console.log('Buscando:', url);
-      const response = await axios.get(url);
-      const order = response.data;
+      
+      const response = await apiServices.getOrder(orderNumber);
+      const order = response;
 
       console.log('Pedido encontrado:', order);
 
-      if (order.status === 'PENDING') {
+      // Verifica se o status do pedido é "PENDING"
+      if (order.status === 'SEPARED') {
+       
         if (successSound) await successSound.replayAsync();
-        navigation.navigate('Order', { items: order.items , orderId: order.id });
-      } else {
-        
-        setModalMessage('Pedido ja Separado');
-        setIsModalVisible(true); // Exibe o modal de erro
 
+        // Navega para a tela de conferência com os itens do pedido
+        navigation.navigate('ItemsConferenceScreen', { items: order.items, orderId: order.id });
+      } else if(order.status === 'PENDING'){
+        if (errorSound) await errorSound.replayAsync();
+        setModalMessage('Pedido ainda não separado.');
+        setIsModalVisible(true);
+      }else {
+        
+        if (errorSound) await errorSound.replayAsync();
+        // Exibe o modal caso o pedido já tenha sido conferido ou separado
+        setModalMessage('Pedido já finalizado');
+        setIsModalVisible(true);
         if (errorSound) await errorSound.replayAsync();
       }
     } catch (error) {
-      
+      console.error(error);
       if (errorSound) await errorSound.replayAsync();
       setModalMessage('Pedido Não encontrado');
       setIsModalVisible(true)
@@ -74,13 +82,13 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Exibe o modal quando necessário */}
+      {/* Exibe o modal de erro ou aviso */}
       <MyModal
         visible={isModalVisible}
         message={modalMessage}
         onClose={closeModal}
       />
-      <Text style={styles.title}>Separação de Pedidos</Text>
+      <Text style={styles.title}>Conferência de Pedidos</Text>
 
       <View style={styles.inputContainer}>
         <TextInput
